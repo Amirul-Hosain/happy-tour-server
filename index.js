@@ -1,10 +1,12 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
+
 require('dotenv').config()
 const cors = require('cors')
 
 const app = express();
-const port = process.env.PORT || 500;
+const port = process.env.PORT || 5000;
 
 
 //middlewere
@@ -22,7 +24,52 @@ async function run() {
     await client.connect();
     const database = client.db("happyJourny");
     const servicesCollection = database.collection("services");
-  } 
+    const ordersCollection = database.collection("orders")
+
+    // GET API
+    app.get('/services', async (req, res) => {
+      const cursor = servicesCollection.find({});
+      const services = await cursor.toArray();
+      res.json(services)
+    })
+
+    // GET API for manage order
+    app.get('/orders/:email', async (req, res) => {
+      // const cursor = ordersCollection.find({});
+      // const order = await cursor.toArray();
+      // res.send(order)
+      const orders = await ordersCollection.find({ email: req.params.email }).toArray();
+      console.log(orders);
+      res.send(orders)
+    })
+
+    // POST API for manage order
+    app.post('/orders', async (req, res) => {
+      const orders = req.body;
+      console.log(orders)
+      const result = await ordersCollection.insertOne(orders);
+      console.log(result);
+      res.json(result)
+    })
+
+    // POST METHOD
+    app.post('/services', async (req, res) => {
+      const service = req.body;
+      const result = await servicesCollection.insertOne(service)
+      res.json(result)
+    })
+
+    // DELETE a single manageOrder
+    app.delete('/orders/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await ordersCollection.deleteOne(query);
+      console.log('deleting a order', result);
+      res.json(result)
+    })
+
+
+  }
   finally {
     // await client.close();
   }
