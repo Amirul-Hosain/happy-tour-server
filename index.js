@@ -33,6 +33,13 @@ async function run() {
       res.json(services)
     })
 
+
+    app.get('/orders', async (req, res) => {
+      const cursor = ordersCollection.find({});
+      const order = await cursor.toArray();
+      res.send(order)
+    })
+
     // GET API for manage order
     app.get('/orders/:email', async (req, res) => {
       // const cursor = ordersCollection.find({});
